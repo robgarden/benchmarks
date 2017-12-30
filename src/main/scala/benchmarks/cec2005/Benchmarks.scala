@@ -462,7 +462,7 @@ object Benchmarks {
         case (a, b) => schaffer6(Sized(a, b))
       }
 
-  private def f8f2[N<:Nat:GTEq2:HasHead,A:Field:NRoot:Trig]
+  def f8f2[N<:Nat:GTEq2:HasHead,A:Field:NRoot:Trig]
     (x: Dimension[N,A]): A =
       (x.toList :+ x.head).pairs mapSum {
         case (a, b) => {

@@ -10,4 +10,6 @@ package object benchmarks {
     with DimensionSyntax
     with MatrixSyntax
     with cec2005.Params
+    with cec2013.niching.Params
+
 }
