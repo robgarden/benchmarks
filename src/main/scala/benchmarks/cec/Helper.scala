@@ -1,5 +1,5 @@
 package benchmarks
-package cec2005
+package cec
 
 import scala.io.Source.fromResource
 
@@ -10,11 +10,12 @@ import shapeless.ops.nat._
 
 import dimension._
 import matrix._
+import benchmarks.implicits._
 
-object Helpers {
+case class Helper(prefix: String) {
 
   def fbiasFromResource(fNumber: Int) =
-    fromResource("cec2005/fbias_data.txt")
+    fromResource(s"${prefix}/fbias_data.txt")
       .mkString
       .trim
       .split("\\s+")
@@ -22,27 +23,27 @@ object Helpers {
       .flatMap { _.index(fNumber - 1) }
       .get.toDouble
 
-  def shiftFromLine[N<:Nat](line: String)(implicit ev: ToInt[N]): Dimension[N,Double] = {
+  def shiftFromLine[N<:Nat:ToInt](line: String): Dimension[N,Double] = {
     val shift = line
       .trim
       .split("\\s+")
-      .map { _.toDouble }
-      .take(ev.apply)
+      .map(_.toDouble)
+      .take(implicitly[ToInt[N]].apply)
       .toVector
     Sized.wrap(shift)
   }
 
   def shiftFromResource[N<:Nat:ToInt](resource: String): Dimension[N,Double] =
-    shiftFromLine(fromResource(s"cec2005/$resource").getLines.toList.head)
+    shiftFromLine(fromResource(s"${prefix}/$resource").getLines.toList.head)
 
   def shiftsFromResource[N<:Nat:ToInt](resource: String): List[Dimension[N,Double]] =
-    fromResource(s"cec2005/$resource")
+    fromResource(s"${prefix}/$resource")
       .getLines
       .toList
       .map(shiftFromLine[N])
 
   def shiftFromResourceF[N<:Nat:ToInt](resource: String, f: List[String] => String) =
-    (f andThen shiftFromLine[N])(fromResource(s"cec2005/$resource").getLines.toList)
+    (f andThen shiftFromLine[N])(fromResource(s"${prefix}/$resource").getLines.toList)
 
   def matrixFromLines[N<:Nat](lines: List[String])(implicit ev: ToInt[N]) = {
     val dim = ev.apply
@@ -64,17 +65,30 @@ object Helpers {
   }
 
   def matrixFromResource[N<:Nat:ToInt](resource: String) =
-    matrixFromLines(fromResource(s"cec2005/$resource").getLines.toList)
+    matrixFromLines(fromResource(s"${prefix}/$resource").getLines.toList)
+
+  def matricesFromResource[M<:Nat:ToInt,N<:Nat:ToInt](resource: String):
+    Dimension[M,Matrix[N,N,Double]] = {
+      val num = implicitly[ToInt[M]].apply
+      val dim = implicitly[ToInt[N]].apply
+      val matrices = fromResource(s"${prefix}/$resource")
+        .getLines
+        .grouped(dim)
+        .toList
+        .map(lines => matrixFromLines[N](lines.toList).t)
+
+      Sized.wrap(matrices.toVector.take(num))
+    }
 
   def matrixFromResourceF[N<:Nat:ToInt](resource: String, f: List[String] => List[String]) =
-    (f andThen matrixFromLines[N])(fromResource(s"cec2005/$resource").getLines.toList)
+    (f andThen matrixFromLines[N])(fromResource(s"${prefix}/$resource").getLines.toList)
 
   def matrixFromResourceTail[N<:Nat:ToInt](resource: String) =
     matrixFromResourceF(resource, _.tail)
 
   def matrix10FromResource[N<:Nat:ToInt](resource: String): Dimension10[Matrix[N,N,Double]] = {
     val dim = implicitly[ToInt[N]].apply
-    val lines = fromResource(s"cec2005/$resource")
+    val lines = fromResource(s"${prefix}/$resource")
       .getLines.toList
 
     val matrices = lines

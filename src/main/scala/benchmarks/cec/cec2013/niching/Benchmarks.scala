@@ -1,4 +1,5 @@
 package benchmarks
+package cec
 package cec2013
 package niching
 
@@ -9,7 +10,7 @@ import spire.implicits._
 import spire.math._
 
 import benchmarks.Benchmarks._
-import benchmarks.cec2005.Benchmarks.f8f2
+import benchmarks.cec.cec2005.Benchmarks.f8f2
 import benchmarks.dimension._
 import benchmarks.matrix._
 import benchmarks.implicits._

@@ -1,4 +1,5 @@
 package benchmarks
+package cec
 package cec2013
 package niching
 
